@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budget {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String         @db.Uuid
+  client_id       String         @db.Uuid
+  public_id       String         @unique @db.VarChar(32)
+  status          String         @default("draft") @db.VarChar(20)
+  title           String?        @db.VarChar(160)
+  notes           String?
+  valid_until     DateTime?      @db.Date
+  currency        String         @default("BRL") @db.Char(3)
+  subtotal        Decimal        @default(0) @db.Decimal(12, 2)
+  discount_amount Decimal        @default(0) @db.Decimal(12, 2)
+  total           Decimal        @default(0) @db.Decimal(12, 2)
+  created_at      DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime       @default(now()) @db.Timestamptz(6)
+  client          client         @relation(fields: [client_id], references: [id], onUpdate: NoAction, map: "fk_budget_client")
+  user            user           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_budget_user")
+  budget_event    budget_event[]
+  budget_item     budget_item[]
+
+  @@index([client_id], map: "idx_budget_client")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_budget_created")
+  @@index([user_id, status], map: "idx_budget_status")
+  @@index([user_id], map: "idx_budget_user")
+}
+
+model budget_event {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  budget_id  String   @db.Uuid
+  type       String   @db.VarChar(30)
+  message    String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  budget     budget   @relation(fields: [budget_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_budget_event_budget")
+
+  @@index([budget_id], map: "idx_budget_event_budget")
+  @@index([budget_id, type], map: "idx_budget_event_type")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model budget_item {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  budget_id   String   @db.Uuid
+  service_id  String?  @db.Uuid
+  name        String   @db.VarChar(160)
+  description String?
+  unit        String   @default("service") @db.VarChar(40)
+  quantity    Decimal  @default(1) @db.Decimal(12, 2)
+  unit_price  Decimal  @default(0) @db.Decimal(12, 2)
+  line_total  Decimal  @default(0) @db.Decimal(12, 2)
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  budget      budget   @relation(fields: [budget_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_budget_item_budget")
+  service     service? @relation(fields: [service_id], references: [id], onUpdate: NoAction, map: "fk_budget_item_service")
+
+  @@index([budget_id], map: "idx_budget_item_budget")
+  @@index([budget_id, sort_order], map: "idx_budget_item_sort")
+}
+
+model client {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  name       String   @db.VarChar(160)
+  whatsapp   String?  @db.VarChar(30)
+  email      String?  @db.VarChar(255)
+  notes      String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  budget     budget[]
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_client_user")
+
+  @@index([user_id, name], map: "idx_client_name")
+  @@index([user_id], map: "idx_client_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model profile {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String   @unique @db.Uuid
+  document_type   String?  @db.VarChar(10)
+  document_number String   @db.VarChar(20)
+  company_name    String   @db.VarChar(160)
+  whatsapp        String?  @db.VarChar(30)
+  phone           String?  @db.VarChar(30)
+  website         String?  @db.VarChar(255)
+  logo_url        String?
+  address_line1   String?  @db.VarChar(255)
+  address_line2   String?  @db.VarChar(255)
+  city            String?  @db.VarChar(100)
+  state           String?  @db.VarChar(100)
+  country         String?  @default("BR") @db.VarChar(80)
+  postal_code     String?  @db.VarChar(20)
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime @default(now()) @db.Timestamptz(6)
+  user            user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_profile_user")
+
+  @@index([document_number], map: "idx_profile_document")
+  @@index([user_id], map: "idx_profile_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model service {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String        @db.Uuid
+  name        String        @db.VarChar(160)
+  description String?
+  unit        String        @default("service") @db.VarChar(40)
+  base_price  Decimal       @default(0) @db.Decimal(12, 2)
+  is_active   Boolean       @default(true)
+  created_at  DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime      @default(now()) @db.Timestamptz(6)
+  budget_item budget_item[]
+  user        user          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_service_user")
+
+  @@index([user_id, name], map: "idx_service_name")
+  @@index([user_id], map: "idx_service_user")
+}
+
+model user {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String    @db.VarChar(120)
+  email         String    @unique @db.VarChar(255)
+  password_hash String
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @default(now()) @db.Timestamptz(6)
+  budget        budget[]
+  client        client[]
+  profile       profile?
+  service       service[]
+
+  @@index([email], map: "idx_user_email")
+}
