@@ -2,6 +2,7 @@ import { Router } from "express";
 import UserRepository from "../repository/UserRepository";
 import { UserController } from "../controller/userController";
 import { UserService } from "../service/UserService";
+import { authMiddleware } from "../middlewares.ts/authMiddleware";
 
 const routes = Router();
 
@@ -24,7 +25,7 @@ routes.post("/user/register", userController.create);
 routes.post("/user/login", userController.login);
 // routes.put("/user/update");
 // routes.delete("/user/delete");
-// routes.get("/user/profile"); // Traz os dados do usuario e da empresa
+routes.get("/user/profile/:id", authMiddleware, userController.getUser); // Traz os dados do usuario e da empresa
 
 // // -- Profile --
 

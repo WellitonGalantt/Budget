@@ -2,6 +2,7 @@ import UserRepository from "../repository/UserRepository";
 import {
   CreateUserInputDTO,
   CreateUserOutputDTO,
+  getUserOutputDTO,
   loginInputDTO,
   loginOutputDTO,
 } from "../types/userTypes";
@@ -84,6 +85,19 @@ export class UserService {
     const output: loginOutputDTO = {
       id: resFindEmail.id,
       token,
+    };
+
+    return output;
+  }
+
+  async getUser(id: string): Promise<getUserOutputDTO> {
+    const resFindId = await this.repo.findById(id);
+
+    const output = {
+      name: resFindId.name,
+      is_active: resFindId.is_active,
+      created_at: resFindId.created_at,
+      updated_at: resFindId.updated_at,
     };
 
     return output;

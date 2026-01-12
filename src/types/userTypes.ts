@@ -19,6 +19,8 @@ export type CreateUserOutputDTO = {
   name: string;
 };
 
+// === Login
+
 export type loginInputDTO = {
   email: string;
   password: string;
@@ -27,4 +29,13 @@ export type loginInputDTO = {
 export type loginOutputDTO = {
   id: string;
   token: string;
+};
+
+// Get User
+
+export type getUserOutputDTO = {
+  name: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
 };

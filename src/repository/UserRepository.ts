@@ -43,4 +43,22 @@ export default class UserRepository {
 
     return user;
   }
+
+  async findById(input: string): Promise<User> {
+    const id = input;
+
+    const resultQuery = await prisma.user.findFirst({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!resultQuery) {
+      throw new Error("Id invalido!");
+    }
+
+    const user: User = resultQuery;
+
+    return user;
+  }
 }

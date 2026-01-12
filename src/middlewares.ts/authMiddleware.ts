@@ -5,9 +5,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const SECRET = String(process.env.SECRET);
+const SECRET = process.env.SECRET;
 if (!SECRET) {
-  console.log("Secret nao carregou!");
+  throw new Error("SECRET não definida no .env");
 }
 
 export type jwtPayload = {
@@ -21,11 +21,12 @@ export const authMiddleware = (
   next: NextFunction
 ) => {
   const authorization = req.headers["authorization"];
-  const token = authorization?.split(" ")[1];
-  if (!token) {
+  const [schema, token] = authorization?.split(" ") ?? [];
+
+  if (!token || schema != "Bearer") {
     res
       .status(401)
-      .json({ error: "Token invalido, token nao pode ser vazio!" });
+      .json({ error: "Token Invalido!" });
     return;
   }
 
