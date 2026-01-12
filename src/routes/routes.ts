@@ -3,12 +3,19 @@ import UserRepository from "../repository/UserRepository";
 import { UserController } from "../controller/userController";
 import { UserService } from "../service/UserService";
 import { authMiddleware } from "../middlewares.ts/authMiddleware";
+import { ProfileRepository } from "../repository/ProfileRepository";
+import { ProfileService } from "../service/ProfileService";
+import { ProfileController } from "../controller/ProfileController";
 
 const routes = Router();
 
 const userRepository = new UserRepository();
-const userService = new UserService(userRepository)
+const userService = new UserService(userRepository);
 const userController = new UserController(userService);
+
+const profileRepository = new ProfileRepository();
+const profileService = new ProfileService(profileRepository);
+const profileController = new ProfileController(profileService);
 
 // Users
 // Profile
@@ -29,8 +36,8 @@ routes.get("/user/profile/:id", authMiddleware, userController.getUser); // Traz
 
 // // -- Profile --
 
-// routes.post("profile/create");
-// routes.put("profile/update");
+routes.post("/profile/create", authMiddleware, profileController.create);
+routes.put("profile/update");
 // routes.delete("profile/delete");
 
 // // -- Budgets --

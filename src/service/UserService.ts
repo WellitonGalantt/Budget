@@ -49,6 +49,11 @@ export class UserService {
       throw new Error("Senha muito fraca!");
     }
 
+    const existEmail = await this.repo.findByEmail(body.email);
+    if(existEmail){
+      throw new Error("Email ja cadastrado!")
+    }
+
     const hashedPassword = await generateHash(body.password);
     body.password = hashedPassword;
 

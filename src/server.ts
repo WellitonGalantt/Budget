@@ -13,8 +13,13 @@ app.use(express.json());
 
 app.use("/api", routes);
 
+app.use((_req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  res.status(404).json({ error: err });
+  console.error(err);
+  res.status(500).json({ error: err?.message ?? "Internal server error" });
 });
 
 export default app;

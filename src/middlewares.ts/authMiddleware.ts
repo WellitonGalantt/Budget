@@ -22,17 +22,18 @@ export const authMiddleware = (
 ) => {
   const authorization = req.headers["authorization"];
   const [schema, token] = authorization?.split(" ") ?? [];
-
+  console.log(authorization)
+  console.log(schema)
   if (!token || schema != "Bearer") {
     res
       .status(401)
-      .json({ error: "Token Invalido!" });
+      .json({ error: "Token Invalido! 1" });
     return;
   }
 
   jwt.verify(token, SECRET, (err, decoded) => {
     if (err) {
-      res.status(401).json({ message: "Token inválido" });
+      res.status(401).json({ message: "Token inválido! 2" });
       return;
     }
 
