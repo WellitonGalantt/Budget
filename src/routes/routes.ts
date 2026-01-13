@@ -6,6 +6,9 @@ import { authMiddleware } from "../middlewares.ts/authMiddleware";
 import { ProfileRepository } from "../repository/ProfileRepository";
 import { ProfileService } from "../service/ProfileService";
 import { ProfileController } from "../controller/ProfileController";
+import { ClientRepository } from "../repository/ClientRepository";
+import { ClientService } from "../service/ClienteService";
+import { ClientController } from "../controller/ClienteController";
 
 const routes = Router();
 
@@ -16,6 +19,10 @@ const userController = new UserController(userService);
 const profileRepository = new ProfileRepository();
 const profileService = new ProfileService(profileRepository);
 const profileController = new ProfileController(profileService);
+
+const clientRepository = new ClientRepository();
+const clientService = new ClientService(clientRepository);
+const clientController = new ClientController(clientService);
 
 // Users
 // Profile
@@ -49,7 +56,7 @@ routes.delete("/profile/delete/:id", authMiddleware, profileController.delete);
 
 // // -- Clients --
 
-// routes.post("/client/create");
+routes.post("/client/create", authMiddleware, clientController.create);
 // routes.put("/client/update");
 // routes.delete("/client/delete");
 // routes.get("/client/view");

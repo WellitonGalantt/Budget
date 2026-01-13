@@ -9,6 +9,7 @@ import {
 import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { isValidEmail } from "../utils/validadeEmail";
 
 dotenv.config();
 
@@ -21,12 +22,6 @@ async function generateHash(password: string): Promise<string> {
   const saltRounds = 10;
   const salt = await bcrypt.genSalt(saltRounds);
   return await bcrypt.hash(password, salt);
-}
-
-const emailRegex: RegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-function isValidEmail(email: string): boolean {
-  return emailRegex.test(email);
 }
 
 export class UserService {
