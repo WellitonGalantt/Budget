@@ -26,7 +26,7 @@ routes.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-// -- Users --
+// // -- Users --
 
 routes.post("/user/register", userController.create);
 routes.post("/user/login", userController.login);
@@ -37,8 +37,8 @@ routes.get("/user/profile/:id", authMiddleware, userController.getUser); // Traz
 // // -- Profile --
 
 routes.post("/profile/create", authMiddleware, profileController.create);
-routes.put("profile/update");
-// routes.delete("profile/delete");
+routes.put("/profile/update", authMiddleware, profileController.update);
+routes.delete("/profile/delete/:id", authMiddleware, profileController.delete);
 
 // // -- Budgets --
 

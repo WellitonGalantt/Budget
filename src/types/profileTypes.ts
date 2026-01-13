@@ -38,3 +38,7 @@ export type createProfileInputDTO = {
 export type createProfileOutputDTO = {
   id: string;
 };
+
+export type updateProfileInputDTO = Partial<
+  Omit<createProfileInputDTO, "user_id">
+>;
