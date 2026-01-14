@@ -22,8 +22,6 @@ export const authMiddleware = (
 ) => {
   const authorization = req.headers["authorization"];
   const [schema, token] = authorization?.split(" ") ?? [];
-  console.log(authorization)
-  console.log(schema)
   if (!token || schema != "Bearer") {
     res
       .status(401)

@@ -57,8 +57,8 @@ routes.delete("/profile/delete/:id", authMiddleware, profileController.delete);
 // // -- Clients --
 
 routes.post("/client/create", authMiddleware, clientController.create);
-// routes.put("/client/update");
-// routes.delete("/client/delete");
-// routes.get("/client/view");
+routes.put("/client/update/:id", authMiddleware, clientController.update);
+routes.delete("/client/delete/:id", authMiddleware, clientController.delete);
+// routes.get("/client/view/:id");
 
 export default routes;

@@ -10,12 +10,10 @@ export type client = {
 };
 
 export type createClienteInputDTO = {
-  user_id: string;
   name: string;
   whatsapp: string;
   email: string;
-  notes: string;
-  updated_at: Date;
+  notes?: string;
 };
 
 export type updateClienteInputDTO = Partial<
