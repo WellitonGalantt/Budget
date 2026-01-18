@@ -7,6 +7,7 @@ import {
   getBudgetByIdOutputDTO,
   updateBudgetInputDTO,
   updateBudgetOutputDTO,
+  updateItemBudgetInputDTO,
 } from "../types/budgetTypes";
 import { formatString, validateTypeUnit } from "../utils/formatStrings";
 import { verifyAllowedKeys } from "../utils/verifyAllowedKeys";
@@ -192,6 +193,10 @@ export class BudgetService {
       }
     }
 
+    if (Object.keys(budgetDateUpdate).length === 0) {
+      throw new Error("No fields to update");
+    }
+
     // === Validacoes ===
 
     if (
@@ -235,6 +240,10 @@ export class BudgetService {
     budgetId: string,
   ): Promise<getBudgetByIdOutputDTO> {
     return await this.repo.getById(userId, budgetId);
+  }
+
+  async getAllBudgets(userId: string) {
+    return await this.repo.getAllBudgets(userId);
   }
 
   async createItemBudget(
@@ -284,6 +293,92 @@ export class BudgetService {
       line_total: item.quantity * item.unit_price,
     };
 
-    return await this.repo.createItemBudget(item, userId, budgetId);
+    return await this.repo.createItemBudget(input, userId, budgetId);
+  }
+
+  async updateItemBudget(
+    item: updateItemBudgetInputDTO,
+    userId: string,
+    itemId: string,
+  ) {
+    const allowedUpdateItemKeys = [
+      "service_id",
+      "name",
+      "description",
+      "unit",
+      "quantity",
+      "unit_price",
+      "line_total",
+      "sort_order",
+    ] as const;
+
+    const allowedUpdateItemKeysSet = new Set<string>(allowedUpdateItemKeys);
+    verifyAllowedKeys(item, allowedUpdateItemKeysSet);
+
+    const budgetDateUpdate: Record<string, any> = {};
+    for (const key in item) {
+      const value = item[key as keyof typeof item];
+
+      if (value !== undefined) {
+        budgetDateUpdate[key] = value;
+      }
+    }
+
+    if (Object.keys(budgetDateUpdate).length === 0) {
+      throw new Error("No fields to update");
+    }
+
+    if (budgetDateUpdate.quantity && budgetDateUpdate.quantity <= 0) {
+      throw new Error("Item quantity must be greater than zero");
+    }
+
+    if (budgetDateUpdate.unit && !validateTypeUnit(budgetDateUpdate.unit)) {
+      throw new Error(
+        "This budgetDateUpdate unit not valid, just values 'vl', 'hr' and 'un'",
+      );
+    }
+
+    if (budgetDateUpdate.unit_price && budgetDateUpdate.unit_price < 0) {
+      throw new Error("Item unit price cannot be negative");
+    }
+
+    if (budgetDateUpdate.unit_price || budgetDateUpdate.quantity) {
+      const existingItem = await this.repo.getItemBudgetById(itemId, userId);
+
+      const quantity =
+        budgetDateUpdate.quantity !== undefined
+          ? budgetDateUpdate.quantity
+          : existingItem.quantity;
+      const unit_price =
+        budgetDateUpdate.unit_price !== undefined
+          ? budgetDateUpdate.unit_price
+          : existingItem.unit_price;
+
+      budgetDateUpdate.line_total = quantity * unit_price;
+    }
+
+    const input = {
+      ...budgetDateUpdate,
+      name: budgetDateUpdate.name
+        ? formatString("none", budgetDateUpdate.name)
+        : undefined,
+      description: budgetDateUpdate.description
+        ? formatString("none", budgetDateUpdate.description)
+        : undefined,
+    };
+
+    return await this.repo.updateItemBudget(input, userId, itemId);
+  }
+
+  async deleteItemBudget(itemId: string, userId: string): Promise<void> {
+    await this.repo.deleteItemBudget(itemId, userId);
+  }
+
+  async getItemBudgetById(itemId: string, userId: string) {
+    return await this.repo.getItemBudgetById(itemId, userId);
+  }
+
+  async getAllItemsBudget(budgetId: string, userId: string) {
+    return await this.repo.getAllItemsBudget(budgetId, userId);
   }
 }

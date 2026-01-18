@@ -59,12 +59,35 @@ routes.post("/budget/create", authMiddleware, budgetController.create);
 routes.put("/budget/update/:id", authMiddleware, budgetController.update);
 routes.delete("/budget/delete/:id", authMiddleware, budgetController.delete);
 routes.get("/budget/view/:id", authMiddleware, budgetController.getById);
+routes.get("/budget/all", authMiddleware, budgetController.getAllBudgets);
 
 // // -- Items --
 
-routes.put("/budget/item/update/:id", authMiddleware, budgetController.update);
-routes.delete("/budget/item/delete/:id", authMiddleware, budgetController.delete);
-routes.get("/budget/item/view/:id", authMiddleware, budgetController.getById);
+routes.post(
+  "/budget/item/create/:id",
+  authMiddleware,
+  budgetController.createItemBudget,
+);
+routes.put(
+  "/budget/item/update/:id",
+  authMiddleware,
+  budgetController.updateItemBudget,
+);
+routes.delete(
+  "/budget/item/delete/:id",
+  authMiddleware,
+  budgetController.deleteItemBudget,
+);
+routes.get(
+  "/budget/item/view/:id",
+  authMiddleware,
+  budgetController.getItemBudgetById,
+);
+routes.get(
+  "/budget/item/all/:id",
+  authMiddleware,
+  budgetController.getAllItemsBudget,
+);
 
 // // -- Clients --
 

@@ -16,12 +16,12 @@ export type budget = {
 };
 
 export type item = {
-  id: String;
-  budget_id: String;
-  service_id: String | null;
-  name: String;
-  description: String | null;
-  unit: String;
+  id: string;
+  budget_id: string;
+  service_id: string | null;
+  name: string;
+  description: string | null;
+  unit: string;
   quantity: number;
   unit_price: number;
   line_total: number;
@@ -133,3 +133,16 @@ export type getBudgetByIdOutputDTO = {
   budget: budget;
   items: item[];
 };
+
+// ===== UPDATE ITEM
+
+export type updateItemBudgetInputDTO = Partial<{
+  service_id: string
+  name: string;
+  description: string
+  unit: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  sort_order: number;
+}>;
