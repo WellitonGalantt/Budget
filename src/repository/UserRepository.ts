@@ -5,7 +5,6 @@ import {
 } from "../types/userTypes";
 import prisma from "./prismaRepository";
 
-
 export default class UserRepository {
   async create(input: CreateUserInputDTO): Promise<CreateUserOutputDTO> {
     const data = {
@@ -13,8 +12,6 @@ export default class UserRepository {
       email: input.email,
       password_hash: input.password,
     };
-
-    
 
     const res = await prisma.user.create({ data });
 
@@ -26,7 +23,7 @@ export default class UserRepository {
     return returnData;
   }
 
-  async findByEmail(input: string): Promise<User> {
+  async findByEmail(input: string): Promise<User | null> {
     const email = input;
 
     const resultQuery = await prisma.user.findFirst({
@@ -35,13 +32,7 @@ export default class UserRepository {
       },
     });
 
-    if (!resultQuery) {
-      throw new Error("Email nao esta cadastrado!");
-    }
-
-    const user: User = resultQuery;
-
-    return user;
+    return resultQuery;
   }
 
   async findById(input: string): Promise<User> {

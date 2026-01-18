@@ -45,8 +45,8 @@ export class UserService {
     }
 
     const existEmail = await this.repo.findByEmail(body.email);
-    if(existEmail){
-      throw new Error("Email ja cadastrado!")
+    if (existEmail) {
+      throw new Error("Email ja cadastrado!");
     }
 
     const hashedPassword = await generateHash(body.password);
@@ -63,6 +63,10 @@ export class UserService {
     }
 
     const resFindEmail = await this.repo.findByEmail(email);
+
+    if (!resFindEmail) {
+      throw new Error("Email not registred!");
+    }
 
     const comparePassword = await bcrypt.compare(
       password,

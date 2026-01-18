@@ -12,15 +12,15 @@ model budget {
   id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id         String         @db.Uuid
   client_id       String         @db.Uuid
-  public_id       String         @unique @db.VarChar(32)
+  public_id       String         @unique @db.VarChar(40)
   status          String         @default("draft") @db.VarChar(20)
-  title           String?        @db.VarChar(160)
+  title           String         @db.VarChar(160)
   notes           String?
   valid_until     DateTime?      @db.Date
   currency        String         @default("BRL") @db.Char(3)
-  subtotal        Decimal        @default(0) @db.Decimal(12, 2)
-  discount_amount Decimal        @default(0) @db.Decimal(12, 2)
-  total           Decimal        @default(0) @db.Decimal(12, 2)
+  subtotal        Int            @default(0)
+  discount_amount Int            @default(0)
+  total           Int            @default(0)
   created_at      DateTime       @default(now()) @db.Timestamptz(6)
   updated_at      DateTime       @default(now()) @db.Timestamptz(6)
   client          client         @relation(fields: [client_id], references: [id], onUpdate: NoAction, map: "fk_budget_client")
@@ -54,9 +54,9 @@ model budget_item {
   name        String   @db.VarChar(160)
   description String?
   unit        String   @default("service") @db.VarChar(40)
-  quantity    Decimal  @default(1) @db.Decimal(12, 2)
-  unit_price  Decimal  @default(0) @db.Decimal(12, 2)
-  line_total  Decimal  @default(0) @db.Decimal(12, 2)
+  quantity    Int      @default(1)
+  unit_price  Int      @default(0)
+  line_total  Int      @default(0)
   sort_order  Int      @default(0)
   created_at  DateTime @default(now()) @db.Timestamptz(6)
   budget      budget   @relation(fields: [budget_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_budget_item_budget")
@@ -114,7 +114,7 @@ model service {
   name        String        @db.VarChar(160)
   description String?
   unit        String        @default("service") @db.VarChar(40)
-  base_price  Decimal       @default(0) @db.Decimal(12, 2)
+  base_price  Int           @default(0)
   is_active   Boolean       @default(true)
   created_at  DateTime      @default(now()) @db.Timestamptz(6)
   updated_at  DateTime      @default(now()) @db.Timestamptz(6)

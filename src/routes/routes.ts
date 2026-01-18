@@ -9,6 +9,9 @@ import { ProfileController } from "../controller/ProfileController";
 import { ClientRepository } from "../repository/ClientRepository";
 import { ClientService } from "../service/ClienteService";
 import { ClientController } from "../controller/ClienteController";
+import { BudgetController } from "../controller/BudgetController";
+import { BudgetRepository } from "../repository/BudgetRepository";
+import { BudgetService } from "../service/BudgetService";
 
 const routes = Router();
 
@@ -24,6 +27,9 @@ const clientRepository = new ClientRepository();
 const clientService = new ClientService(clientRepository);
 const clientController = new ClientController(clientService);
 
+const dudgetRepository = new BudgetRepository();
+const budgetService = new BudgetService(dudgetRepository);
+const budgetController = new BudgetController(budgetService);
 // Users
 // Profile
 // Budgets
@@ -49,10 +55,16 @@ routes.delete("/profile/delete/:id", authMiddleware, profileController.delete);
 
 // // -- Budgets --
 
-// routes.post("budget/create");
-// routes.put("budget/update");
-// routes.delete("budget/delete");
-// routes.get("budget/view");
+routes.post("/budget/create", authMiddleware, budgetController.create);
+routes.put("/budget/update/:id", authMiddleware, budgetController.update);
+routes.delete("/budget/delete/:id", authMiddleware, budgetController.delete);
+routes.get("/budget/view/:id", authMiddleware, budgetController.getById);
+
+// // -- Items --
+
+routes.put("/budget/item/update/:id", authMiddleware, budgetController.update);
+routes.delete("/budget/item/delete/:id", authMiddleware, budgetController.delete);
+routes.get("/budget/item/view/:id", authMiddleware, budgetController.getById);
 
 // // -- Clients --
 
