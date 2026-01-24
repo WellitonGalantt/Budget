@@ -1,77 +1,45 @@
 import { ClientService } from "../service/ClienteService";
 import { createClienteInputDTO } from "../types/clientTypes";
 import { Response, Request } from "express";
+import { asyncHandler } from "../utils/asyncHandler";
+import { successResponse } from "../utils/successResponse";
 
 export class ClientController {
   constructor(private service: ClientService) {}
 
-  create = async (
-    req: Request<{}, {}, createClienteInputDTO>,
-    res: Response
-  ) => {
-    const body = req.body;
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+  create = asyncHandler(
+    async (req: Request<{}, {}, createClienteInputDTO>, res: Response) => {
+      const body = req.body;
 
-    const userId = req.user?.userId;
+      const userId = req.user!.userId;
 
-    try {
       await this.service.create(body, userId);
+      successResponse(res, 201);
+    },
+  );
 
-      res.status(201).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+  update = asyncHandler(
+    async (
+      req: Request<{ id: string }, {}, createClienteInputDTO>,
+      res: Response,
+    ) => {
+      const body = req.body;
+      const clientId = req.params.id;
 
-  update = async (
-    req: Request<{ id: string }, {}, createClienteInputDTO>,
-    res: Response
-  ) => {
-    const body = req.body;
-    const clientId = req.params.id;
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+      const userId = req.user!.userId;
 
-    const userId = req.user?.userId;
-
-    try {
       await this.service.update(body, userId, clientId);
 
-      res.status(201).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      successResponse(res, 201);
+    },
+  );
 
-  delete = async (req: Request<{ id: string }>, res: Response) => {
+  delete = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
     const clientId = req.params.id;
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
 
-    const userId = req.user?.userId;
+    const userId = req.user!.userId;
 
-    try {
-      await this.service.delete(userId, clientId);
-
-      res.status(201).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+    await this.service.delete(userId, clientId);
+    successResponse(res, 200);
+  });
 }

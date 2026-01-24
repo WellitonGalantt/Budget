@@ -94,108 +94,67 @@ export class BudgetController {
     },
   );
 
-  updateItemBudget = async (req: Request<{ id: string }>, res: Response) => {
-    const item = req.body;
-    const itemId = req.params.id;
+  updateItemBudget = asyncHandler(
+    async (req: Request<{ id: string }>, res: Response) => {
+      const item = req.body;
+      const itemId = req.params.id;
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+      if (!itemId) {
+        return res.status(400).json({ error: "Item ID is required" });
+      }
 
-    if (!itemId) {
-      return res.status(400).json({ error: "Item ID is required" });
-    }
+      const userId = req.user!.userId;
 
-    const userId = req.user?.userId;
-
-    try {
       await this.service.updateItemBudget(item, userId, itemId);
 
-      res.status(201).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      successResponse(res, 201);
+    },
+  );
 
-  deleteItemBudget = async (req: Request<{ id: string }>, res: Response) => {
-    const itemId = req.params.id;
+  deleteItemBudget = asyncHandler(
+    async (req: Request<{ id: string }>, res: Response) => {
+      const itemId = req.params.id;
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+      if (!itemId) {
+        return res.status(400).json({ error: "Item ID is required" });
+      }
 
-    if (!itemId) {
-      return res.status(400).json({ error: "Item ID is required" });
-    }
+      const userId = req.user!.userId;
 
-    const userId = req.user?.userId;
-
-    try {
       await this.service.deleteItemBudget(itemId, userId);
+      successResponse(res, 201);
+    },
+  );
 
-      res.status(201).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+  getItemBudgetById = asyncHandler(
+    async (req: Request<{ id: string }>, res: Response) => {
+      const itemId = req.params.id;
 
-  getItemBudgetById = async (req: Request<{ id: string }>, res: Response) => {
-    const itemId = req.params.id;
+      if (!itemId) {
+        return res.status(400).json({ error: "Item ID is required" });
+      }
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+      const userId = req.user!.userId;
 
-    if (!itemId) {
-      return res.status(400).json({ error: "Item ID is required" });
-    }
-
-    const userId = req.user?.userId;
-
-    try {
       const result = await this.service.getItemBudgetById(itemId, userId);
 
-      res.status(201).json({ success: true, data: result });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      successResponse(res, 200, result);
+    },
+  );
 
-  getAllItemsBudget = async (req: Request<{ id: string }>, res: Response) => {
-    const budgetId = req.params.id;
+  getAllItemsBudget = asyncHandler(
+    async (req: Request<{ id: string }>, res: Response) => {
+      const budgetId = req.params.id;
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+      if (!budgetId) {
+        return res.status(400).json({ error: "Budget ID is required" });
+      }
 
-    if (!budgetId) {
-      return res.status(400).json({ error: "Budget ID is required" });
-    }
+      const userId = req.user!.userId;
 
-    const userId = req.user?.userId;
-
-    try {
       const result = await this.service.getAllItemsBudget(budgetId, userId);
 
       res.status(201).json({ success: true, data: result });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+    },
+  );
 }

@@ -1,40 +1,27 @@
 import { Request, Response } from "express";
 import { UserService } from "../service/UserService";
 import { CreateUserInputDTO, loginInputDTO } from "../types/userTypes";
+import { asyncHandler } from "../utils/asyncHandler";
+import { success } from "zod";
+import { successResponse } from "../utils/successResponse";
 
 export class UserController {
   constructor(private service: UserService) {}
 
-  create = async (req: Request<{}, {}, CreateUserInputDTO>, res: Response) => {
-    const body = req.body;
+  create = asyncHandler(
+    async (req: Request<{}, {}, CreateUserInputDTO>, res: Response) => {
+      const body = req.body;
 
-    if (!body || !body.name || !body.email || !body.password) {
-      res.status(204).json({ error: "Todos os os campos devem ser enviados!" });
-      return;
-    }
-
-    try {
       const result = await this.service.create(body);
 
-      res.status(201).json({ success: true, result: result });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      successResponse(res, 201, result);
+    },
+  );
 
-  login = async (req: Request<{}, {}, loginInputDTO>, res: Response) => {
-    const body = req.body;
+  login = asyncHandler(
+    async (req: Request<{}, {}, loginInputDTO>, res: Response) => {
+      const body = req.body;
 
-    if (!body) {
-      res.status(204).json({ error: "Todos os os campos devem ser enviados!" });
-      return;
-    }
-
-    try {
       const result = await this.service.login(body);
 
       res.cookie("accessToken", result.token, {
@@ -44,44 +31,27 @@ export class UserController {
         maxAge: 1000 * 60 * 60,
       });
 
-      res.status(201).json({ success: true, id: result.id });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      successResponse(res, 201, { id: result.id });
+    },
+  );
 
-  getUser = async (req: Request<{ id: string }>, res: Response) => {
-    const paramId = req.params.id;
-    const userId = req.user?.userId;
+  getUser = asyncHandler(
+    async (req: Request<{ id: string }>, res: Response) => {
+      const paramId = req.params.id;
+      const userId = req.user?.userId;
 
-    if (paramId != userId) {
-      res.status(404).json({ error: "Id invalido!" });
-      return;
-    }
+      if (paramId != userId) {
+        res.status(404).json({ error: "Id invalido!" });
+        return;
+      }
 
-    if (!paramId) {
-      res.status(204).json({ error: "Todos os os campos devem ser enviados!" });
-      return;
-    }
-
-    try {
       const result = await this.service.getUser(userId);
 
-      res.status(201).json({ result: result });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      successResponse(res, 200, result);
+    },
+  );
 
-  verify = (req: Request, res: Response) => {
+  verify = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
 
     if (!userId) {
@@ -91,6 +61,6 @@ export class UserController {
       return;
     }
 
-    res.status(200).json({ authenticated: true });
-  };
+    successResponse(res, 200, { authenticated: true });
+  });
 }
