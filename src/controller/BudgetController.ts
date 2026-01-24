@@ -6,168 +6,93 @@ import {
   updateBudgetInputDTO,
   updateItemBudgetInputDTO,
 } from "../types/budgetTypes";
+import { asyncHandler } from "../utils/asyncHandler";
+import { successResponse } from "../utils/successResponse";
 
 export class BudgetController {
   constructor(private service: BudgetService) {}
 
-  create = async (
-    req: Request<{}, {}, createBudgetInputDTO>,
-    res: Response,
-  ) => {
-    const body = req.body;
+  create = asyncHandler(
+    async (req: Request<{}, {}, createBudgetInputDTO>, res: Response) => {
+      const body = req.body;
+      const userId = req.user!.userId;
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
-
-    const userId = req.user?.userId;
-
-    try {
       await this.service.create(body, userId);
+      successResponse(res, 201);
+    },
+  );
 
-      res.status(201).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+  update = asyncHandler(
+    async (
+      req: Request<{ id: string }, {}, updateBudgetInputDTO>,
+      res: Response,
+    ) => {
+      const body = req.body;
+      const budgetId = req.params.id;
 
-  update = async (
-    req: Request<{ id: string }, {}, updateBudgetInputDTO>,
-    res: Response,
-  ) => {
-    const body = req.body;
-    const budgetId = req.params.id;
+      if (!budgetId) {
+        return res.status(400).json({ error: "Budget ID is required" });
+      }
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
-
-    if (!budgetId) {
-      return res.status(400).json({ error: "Budget ID is required" });
-    }
-
-    if (body && Object.keys(body).length === 0) {
-      return res
-        .status(400)
-        .json({ error: "At least one field is required to update" });
-    }
-
-    const userId = req.user?.userId;
-
-    try {
+      const userId = req.user!.userId;
       const result = await this.service.update(body, userId, budgetId);
+      successResponse(res, 201, result);
+    },
+  );
 
-      res.status(201).json({ success: true, data: result });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
-
-  delete = async (req: Request<{ id: string }>, res: Response) => {
+  delete = asyncHandler(async (req: Request<{ id: string }>, res: Response) => {
     const budgetId = req.params.id;
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+    const userId = req.user!.userId;
 
-    const userId = req.user?.userId;
+    await this.service.delete(userId, budgetId);
 
-    try {
-      await this.service.delete(userId, budgetId);
+    successResponse(res, 200);
+  });
 
-      res.status(200).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+  getById = asyncHandler(
+    async (req: Request<{ id: string }>, res: Response) => {
+      const budgetId = req.params.id;
 
-  getById = async (req: Request<{ id: string }>, res: Response) => {
-    const budgetId = req.params.id;
+      if (!budgetId) {
+        return res.status(400).json({ error: "Budget ID is required" });
+      }
 
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+      const userId = req.user!.userId;
 
-    if (!budgetId) {
-      return res.status(400).json({ error: "Budget ID is required" });
-    }
+      const result = await this.service.getbyId(userId, budgetId);
 
-    const userId = req.user?.userId;
+      successResponse(res, 200, result);
+    },
+  );
 
-    try {
-      const budget = await this.service.getbyId(userId, budgetId);
+  getAllBudgets = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
 
-      res.status(200).json({ success: true, data: budget });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+    const result = await this.service.getAllBudgets(userId);
 
-  getAllBudgets = async (req: Request, res: Response) => {
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
+    successResponse(res, 200, result);
+  });
 
-    const userId = req.user?.userId;
+  createItemBudget = asyncHandler(
+    async (
+      req: Request<{ id: string }, {}, createItemBudgetInputDTO>,
+      res: Response,
+    ) => {
+      const item = req.body;
+      const budgetId = req.params.id;
 
-    try {
-      const result = await this.service.getAllBudgets(userId);
+      if (!budgetId) {
+        return res.status(400).json({ error: "Budget ID is required" });
+      }
 
-      res.status(200).json({ success: true, data: result });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      const userId = req.user!.userId;
 
-  createItemBudget = async (
-    req: Request<{ id: string }, {}, createItemBudgetInputDTO>,
-    res: Response,
-  ) => {
-    const item = req.body;
-    const budgetId = req.params.id;
-
-    if (!req.user) {
-      return res.status(401).json({ error: "Não autenticado" });
-    }
-
-    if (!budgetId) {
-      return res.status(400).json({ error: "Budget ID is required" });
-    }
-
-    const userId = req.user?.userId;
-
-    try {
       await this.service.createItemBudget(item, userId, budgetId);
 
-      res.status(201).json({ success: true });
-    } catch (err: any) {
-      console.log(err.message);
-      res.status(400).json({
-        error: err.message,
-        message: "Houve algum erro",
-      });
-    }
-  };
+      successResponse(res, 201);
+    },
+  );
 
   updateItemBudget = async (req: Request<{ id: string }>, res: Response) => {
     const item = req.body;

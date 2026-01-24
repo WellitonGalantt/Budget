@@ -46,6 +46,7 @@ routes.post("/user/login", userController.login);
 // routes.put("/user/update");
 // routes.delete("/user/delete");
 routes.get("/user/profile/:id", authMiddleware, userController.getUser); // Traz os dados do usuario e da empresa
+routes.get("/user/verify", authMiddleware, userController.verify); // Traz os dados do usuario e da empresa
 
 // // -- Profile --
 

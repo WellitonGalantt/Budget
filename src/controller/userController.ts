@@ -16,7 +16,7 @@ export class UserController {
     try {
       const result = await this.service.create(body);
 
-      res.status(201).json({ result: result });
+      res.status(201).json({ success: true, result: result });
     } catch (err: any) {
       console.log(err.message);
       res.status(400).json({
@@ -37,7 +37,14 @@ export class UserController {
     try {
       const result = await this.service.login(body);
 
-      res.status(201).json({ result: result });
+      res.cookie("accessToken", result.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60,
+      });
+
+      res.status(201).json({ success: true, id: result.id });
     } catch (err: any) {
       console.log(err.message);
       res.status(400).json({
@@ -72,5 +79,18 @@ export class UserController {
         message: "Houve algum erro",
       });
     }
+  };
+
+  verify = (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      res
+        .status(401)
+        .json({ error: "Not authenticated!", authenticated: false });
+      return;
+    }
+
+    res.status(200).json({ authenticated: true });
   };
 }
