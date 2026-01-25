@@ -49,7 +49,6 @@ export type item = z.infer<typeof itemSchema>;
 
 // --- ITEM INPUT
 export const createItemBudgetInputSchema = z.object({
-  budget_id: z.uuid("ID do orçamento inválido!"),
   service_id: z.uuid("ID do serviço inválido!").optional(),
   name: z.string().trim().min(4).max(160),
   description: z.string().trim().max(160).optional(),
@@ -77,7 +76,7 @@ export const createBudgetBodySchema = z.object({
     total: z.coerce.number().nonnegative(),
   }),
   items: z
-    .array(createItemBudgetInputSchema.omit({ budget_id: true }))
+    .array(createItemBudgetInputSchema)
     .nonempty("O orçamento deve conter pelo menos um item"),
 });
 export type createBudgetInputDTO = z.infer<typeof createBudgetBodySchema>;
@@ -89,7 +88,6 @@ export type updateBudgetInputDTO = z.infer<typeof updateBudgetInputSchema>;
 
 export const updateItemBudgetInputSchema = createItemBudgetInputSchema
   .partial()
-  .omit({ budget_id: true });
 export type updateItemBudgetInputDTO = z.infer<
   typeof updateItemBudgetInputSchema
 >;
@@ -103,6 +101,7 @@ export const paramsBudgetIdSchema = z.object({
 // ==== Outputs
 
 export const createItemBudgetOutputSchema = itemSchema.pick({
+  id: true,
   budget_id: true,
   name: true,
   unit: true,
@@ -111,6 +110,7 @@ export const createItemBudgetOutputSchema = itemSchema.pick({
   line_total: true,
   sort_order: true,
 });
+
 export type createItemBudgetOutputDTO = z.infer<
   typeof createItemBudgetOutputSchema
 >;
@@ -140,6 +140,7 @@ export type getBudgetByIdOutputDTO = z.infer<typeof getBudgetByIdOutputSchema>;
 // --- UPDATE OUTPUTS
 export const updateItemBudgetOutputSchema =
   createItemBudgetOutputSchema.partial();
+  
 export type updateItemBudgetOutputDTO = z.infer<
   typeof updateItemBudgetOutputSchema
 >;

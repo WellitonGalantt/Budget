@@ -1,61 +1,170 @@
-POST http://localhost:3333/api/user/register
-content-type: application/json
+### Configurações Globais
+@baseUrl = http://localhost:3333/api
+@token = TOKEN_CASO_SEJA_COM_HEADER
+@clientId = 77c2b77c-55db-485f-8f35-0f1c393cfbfc
+@budgetId = 55b0cc00-64c3-41fc-8f04-786789cda4ca
+@itemId = 837a9661-9419-49d8-b001-7b03b4477797
+@userId = d6279774-94d3-4657-b73b-5517765a33ce
+@profileId = 5827c9fb-7c9b-4e16-9610-1fd1f108cc01
+
+# ==========================================
+# USERS
+# ==========================================
+
+### Register User
+POST {{baseUrl}}/user/register
+Content-Type: application/json
 
 {
-    "name": "Joaozinho Zika",
-    "email": "teste@gmail.com",
-    "password": "teste16@#_D"
+    "name": "Dev Pro Expert",
+    "email": "expert@pro.com",
+    "password": "Password123!"
 }
 
-### Login
-
-POST http://localhost:3333/api/user/login
-content-type: application/json
-
+### Login User
+# @name login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
 
 {
-    "email": "teste@gmail.com",
-    "password": "teste16@#_D"
+    "email": "expert@pro.com",
+    "password": "Password123!"
 }
 
-### CLIENTES - Create
+### Verify Token
+GET {{baseUrl}}/user/verify
+Authorization: Bearer {{token}}
 
-POST http://localhost:3333/api/client/create
-content-type: application/json
+# ==========================================
+# PROFILES (Dados da sua Empresa)
+# ==========================================
 
+### Create Profile
+POST {{baseUrl}}/profile/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
 
 {
-    "name": "Joaozinho Zika",
-    "whatsapp": "12345678901",
-    "email": "joaozinho2@gmail.com",
-    "notes": "Apenas Testando"
+    "document_type": "cnpj",
+    "document_number": "12345678000199",
+    "company_name": "Minha Empresa de Software LTDA",
+    "whatsapp": "11999998888",
+    "website": "https://minhaempresa.com",
+    "city": "São Paulo",
+    "state": "SP",
+    "country": "Brasil",
+    "postal_code": "01001000"
 }
 
+# ==========================================
+# CLIENTES
+# ==========================================
 
-
-###
-POST http://localhost:3333/api/budget/create
-content-type: application/json
-
+### Create Client .
+POST {{baseUrl}}/client/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
 
 {
-    "budget":{
-        "client_id": "24a4808d-4cc0-45b3-a220-b764ca9fd680",
-        "title": "Testando o Zod",
-        "notes": "Apenas Tstando",
-        "valid_until": "2026-12-31",
-        "subtotal": 2000,
-        "discount_amount": 500,
-        "total": 1500
+    "name": "Cliente VIP de Teste",
+    "whatsapp": "11988887777",
+    "email": "cliente.vip@gmail.com",
+    "notes": "Cliente focado em projetos de alto desempenho."
+}
+
+### Update Client
+PUT {{baseUrl}}/client/update/{{clientId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Cliente VIP Atualizado",
+    "notes": "Atualizamos as notas do cliente."
+}
+
+# ==========================================
+# BUDGETS (Orçamentos)
+# ==========================================
+
+### Create Full Budget (Pai + Filhos)
+POST {{baseUrl}}/budget/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "budget": {
+        "client_id": "{{clientId}}",
+        "title": "Desenvolvimento Sistema Web E-commerce",
+        "notes": "Entrega em 3 sprints de 15 dias.",
+        "valid_until": "2026-12-31T23:59:59Z",
+        "currency": "BRL",
+        "subtotal": 12000,
+        "discount_amount": 1000,
+        "total": 11000
     },
-    "items":[
+    "items": [
         {
-        "name": "Item teste",
-        "description": "Seila kkk",
-        "quantity": 3,
-        "unit_price": 2000,
-        "line_total": 6000,
-        "sort_order": 1
+            "name": "Desenvolvimento Front-end React",
+            "description": "Criação de 10 telas responsivas e integração com API",
+            "unit": "hr",
+            "quantity": 80,
+            "unit_price": 100,
+            "line_total": 8000,
+            "sort_order": 1
+        },
+        {
+            "name": "Desenvolvimento Backend Node.js",
+            "description": "Estrutura de banco de dados e rotas REST",
+            "unit": "hr",
+            "quantity": 40,
+            "unit_price": 100,
+            "line_total": 4000,
+            "sort_order": 2
         }
     ]
 }
+
+### Get All Budgets
+GET {{baseUrl}}/budget/all
+Authorization: Bearer {{token}}
+
+### View Single Budget
+GET {{baseUrl}}/budget/view/{{budgetId}}
+Authorization: Bearer {{token}}
+
+# ==========================================
+# BUDGET ITEMS (Gerenciamento Individual)
+# ==========================================
+
+### Create Single Item inside Budget
+POST {{baseUrl}}/budget/item/create/{{budgetId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "name": "Serviço Adicional de SEO 2",
+    "description": "Otimização para mecanismos de busca",
+    "unit": "un",
+    "quantity": 1,
+    "unit_price": 1500,
+    "line_total": 1500,
+    "sort_order": 3
+}
+
+### Update Item
+PUT {{baseUrl}}/budget/item/update/{{itemId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "quantity": 2,
+    "line_total": 3000
+}
+
+### Delete Item
+DELETE {{baseUrl}}/budget/item/delete/{{itemId}}
+Authorization: Bearer {{token}}
+
+### Get All Items from Budget
+GET {{baseUrl}}/budget/item/all/{{budgetId}}
+Authorization: Bearer {{token}}

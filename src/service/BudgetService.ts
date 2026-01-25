@@ -4,10 +4,12 @@ import {
   createBudgetInputDTO,
   createBudgetOutputDTO,
   createItemBudgetInputDTO,
+  createItemBudgetOutputDTO,
   getBudgetByIdOutputDTO,
   updateBudgetInputDTO,
   updateBudgetOutputDTO,
   updateItemBudgetInputDTO,
+  updateItemBudgetOutputDTO,
 } from "../types/budgetTypes";
 import { formatString } from "../utils/formatStrings";
 
@@ -78,7 +80,7 @@ export class BudgetService {
     item: createItemBudgetInputDTO,
     userId: string,
     budgetId: string,
-  ): Promise<void> {
+  ): Promise<createItemBudgetOutputDTO> {
     const input = {
       ...item,
       line_total: item.quantity * item.unit_price,
@@ -91,7 +93,7 @@ export class BudgetService {
     item: updateItemBudgetInputDTO,
     userId: string,
     itemId: string,
-  ) {
+  ): Promise<updateItemBudgetOutputDTO> {
     return await this.repo.updateItemBudget(item, userId, itemId);
   }
 

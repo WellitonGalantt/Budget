@@ -88,9 +88,13 @@ export class BudgetController {
 
       const userId = req.user!.userId;
 
-      await this.service.createItemBudget(item, userId, budgetId);
+      const result = await this.service.createItemBudget(
+        item,
+        userId,
+        budgetId,
+      );
 
-      successResponse(res, 201);
+      successResponse(res, 200, result);
     },
   );
 
@@ -105,9 +109,9 @@ export class BudgetController {
 
       const userId = req.user!.userId;
 
-      await this.service.updateItemBudget(item, userId, itemId);
+      const result = await this.service.updateItemBudget(item, userId, itemId);
 
-      successResponse(res, 201);
+      successResponse(res, 201, result);
     },
   );
 
@@ -122,7 +126,7 @@ export class BudgetController {
       const userId = req.user!.userId;
 
       await this.service.deleteItemBudget(itemId, userId);
-      successResponse(res, 201);
+      successResponse(res, 200);
     },
   );
 
@@ -154,7 +158,7 @@ export class BudgetController {
 
       const result = await this.service.getAllItemsBudget(budgetId, userId);
 
-      res.status(201).json({ success: true, data: result });
+      res.status(200).json({ success: true, data: result });
     },
   );
 }
