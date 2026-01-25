@@ -4,3 +4,6 @@ Anotações
 
 /src/generated/prisma
 /generated/prisma
+/generated
+
+/src/routes/request.rest

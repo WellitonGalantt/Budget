@@ -25,9 +25,16 @@ import {
 import { UserController } from "../controller/UserController";
 import {
   createBudgetBodySchema,
+  createItemBudgetInputSchema,
   paramsBudgetIdSchema,
   updateBudgetInputSchema,
+  updateItemBudgetInputSchema,
 } from "../types/budgetTypes";
+import {
+  createClienteBodySchema,
+  paramsClientIdSchema,
+  updateClienteBodySchema,
+} from "../types/clientTypes";
 
 const routes = Router();
 
@@ -133,34 +140,54 @@ routes.get("/budget/all", authMiddleware, budgetController.getAllBudgets);
 routes.post(
   "/budget/item/create/:id",
   authMiddleware,
+  validate({ body: createItemBudgetInputSchema, params: paramsBudgetIdSchema }),
   budgetController.createItemBudget,
 );
 routes.put(
   "/budget/item/update/:id",
   authMiddleware,
+  validate({ body: updateItemBudgetInputSchema, params: paramsBudgetIdSchema }),
   budgetController.updateItemBudget,
 );
 routes.delete(
   "/budget/item/delete/:id",
   authMiddleware,
+  validate({ params: paramsBudgetIdSchema }),
   budgetController.deleteItemBudget,
 );
 routes.get(
   "/budget/item/view/:id",
   authMiddleware,
+  validate({ params: paramsBudgetIdSchema }),
   budgetController.getItemBudgetById,
 );
 routes.get(
   "/budget/item/all/:id",
   authMiddleware,
+  validate({ params: paramsBudgetIdSchema }),
   budgetController.getAllItemsBudget,
 );
 
 // // -- Clients --
 
-routes.post("/client/create", authMiddleware, clientController.create);
-routes.put("/client/update/:id", authMiddleware, clientController.update);
-routes.delete("/client/delete/:id", authMiddleware, clientController.delete);
+routes.post(
+  "/client/create",
+  authMiddleware,
+  validate({ body: createClienteBodySchema }),
+  clientController.create,
+);
+routes.put(
+  "/client/update/:id",
+  authMiddleware,
+  validate({ body: updateClienteBodySchema, params: paramsClientIdSchema }),
+  clientController.update,
+);
+routes.delete(
+  "/client/delete/:id",
+  authMiddleware,
+  validate({ params: paramsClientIdSchema }),
+  clientController.delete,
+);
 // routes.get("/client/view/:id");
 
 export default routes;

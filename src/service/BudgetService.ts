@@ -25,9 +25,6 @@ export class BudgetService {
     const budget = input.budget;
     const items = input.items;
 
-    console.log(budget);
-    console.log(items);
-
     const subTotalBudget = items.reduce((acc, item) => {
       return acc + item.quantity * item.unit_price;
     }, 0);
@@ -35,9 +32,6 @@ export class BudgetService {
     const inputBgt: createBudgetInputDTO = {
       budget: {
         ...budget,
-        title: formatString("none", budget.title),
-        notes: budget.notes ? formatString("none", budget.notes) : "",
-        currency: "BRL",
         subtotal: subTotalBudget,
         total: subTotalBudget - budget.discount_amount,
       },
@@ -45,8 +39,6 @@ export class BudgetService {
         const totalItem = i.quantity * i.unit_price;
         return {
           ...i,
-          name: formatString("none", i.name),
-          description: i.description ? formatString("none", i.description) : "",
           line_total: totalItem,
         };
       }),

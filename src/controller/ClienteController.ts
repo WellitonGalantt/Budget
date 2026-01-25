@@ -13,8 +13,8 @@ export class ClientController {
 
       const userId = req.user!.userId;
 
-      await this.service.create(body, userId);
-      successResponse(res, 201);
+      const id = await this.service.create(body, userId);
+      successResponse(res, 201, { id });
     },
   );
 

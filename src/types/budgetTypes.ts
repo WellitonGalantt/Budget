@@ -49,8 +49,8 @@ export type item = z.infer<typeof itemSchema>;
 
 // --- ITEM INPUT
 export const createItemBudgetInputSchema = z.object({
-  budget_id: z.string().uuid("ID do orçamento inválido!"),
-  service_id: z.string().uuid("ID do serviço inválido!").optional(),
+  budget_id: z.uuid("ID do orçamento inválido!"),
+  service_id: z.uuid("ID do serviço inválido!").optional(),
   name: z.string().trim().min(4).max(160),
   description: z.string().trim().max(160).optional(),
   unit: z.string().trim().max(40).default("service"),
@@ -88,8 +88,8 @@ export const updateBudgetInputSchema =
 export type updateBudgetInputDTO = z.infer<typeof updateBudgetInputSchema>;
 
 export const updateItemBudgetInputSchema = createItemBudgetInputSchema
-  .omit({ budget_id: true })
-  .partial();
+  .partial()
+  .omit({ budget_id: true });
 export type updateItemBudgetInputDTO = z.infer<
   typeof updateItemBudgetInputSchema
 >;

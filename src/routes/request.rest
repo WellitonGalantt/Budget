@@ -7,12 +7,55 @@ content-type: application/json
     "password": "teste16@#_D"
 }
 
-###
+### Login
 
 POST http://localhost:3333/api/user/login
 content-type: application/json
 
+
 {
     "email": "teste@gmail.com",
     "password": "teste16@#_D"
+}
+
+### CLIENTES - Create
+
+POST http://localhost:3333/api/client/create
+content-type: application/json
+
+
+{
+    "name": "Joaozinho Zika",
+    "whatsapp": "12345678901",
+    "email": "joaozinho2@gmail.com",
+    "notes": "Apenas Testando"
+}
+
+
+
+###
+POST http://localhost:3333/api/budget/create
+content-type: application/json
+
+
+{
+    "budget":{
+        "client_id": "24a4808d-4cc0-45b3-a220-b764ca9fd680",
+        "title": "Testando o Zod",
+        "notes": "Apenas Tstando",
+        "valid_until": "2026-12-31",
+        "subtotal": 2000,
+        "discount_amount": 500,
+        "total": 1500
+    },
+    "items":[
+        {
+        "name": "Item teste",
+        "description": "Seila kkk",
+        "quantity": 3,
+        "unit_price": 2000,
+        "line_total": 6000,
+        "sort_order": 1
+        }
+    ]
 }

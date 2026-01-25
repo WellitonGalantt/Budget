@@ -17,8 +17,8 @@ export class BudgetController {
       const body = req.body;
       const userId = req.user!.userId;
 
-      await this.service.create(body, userId);
-      successResponse(res, 201);
+      const result = await this.service.create(body, userId);
+      successResponse(res, 201, result);
     },
   );
 

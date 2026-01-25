@@ -6,6 +6,7 @@ import {
   createItemBudgetInputDTO,
   getBudgetByIdOutputDTO,
   item,
+  statusBudget,
   updateBudgetInputDTO,
   updateBudgetOutputDTO,
   updateItemBudgetInputDTO,
@@ -92,7 +93,10 @@ export class BudgetRepository {
       };
 
       return {
-        budget: returnBudget,
+        budget: {
+          ...returnBudget,
+          status: budgetCreated.status as statusBudget,
+        },
         items: createdItems,
       };
     });
@@ -185,7 +189,10 @@ export class BudgetRepository {
       });
 
       return {
-        budget: updatedBudget,
+        budget: {
+          ...updatedBudget,
+          status: updatedBudget.status as statusBudget,
+        },
         items: budgetItems,
       };
     });
@@ -245,7 +252,10 @@ export class BudgetRepository {
       });
 
       return {
-        budget,
+        budget: {
+          ...budget,
+          status: budget.status as statusBudget,
+        },
         items,
       };
     });
@@ -261,7 +271,11 @@ export class BudgetRepository {
     if (!budgets) {
       throw new Error("No budgets found for this user");
     }
-    return budgets;
+
+    // Colocar o unknow antes de fazer o cast serve para "resetar" o tipo antigo
+    // Como se eu estivesse setando um novo tipo, o que pode nao ser bom se nao
+    // ter certeza de que o tipo novo é o que eu quero
+    return budgets as unknown as budget[];
   }
 
   async createItemBudget(
