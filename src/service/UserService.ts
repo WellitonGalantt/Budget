@@ -32,18 +32,6 @@ export class UserService {
   }
 
   async create(body: CreateUserInputDTO): Promise<Error | CreateUserOutputDTO> {
-    if (body.name.length <= 3) {
-      throw new Error("Nome deve ter mais do que 3 caracteres!");
-    }
-
-    if (!isValidEmail(body.email)) {
-      throw new Error("Formato de email incorreto!");
-    }
-
-    if (body.password.length <= 8) {
-      throw new Error("Senha muito fraca!");
-    }
-
     const existEmail = await this.repo.findByEmail(body.email);
     if (existEmail) {
       throw new Error("Email ja cadastrado!");
@@ -58,10 +46,6 @@ export class UserService {
   async login(body: loginInputDTO): Promise<loginOutputDTO> {
     const { email, password } = body;
 
-    if (!isValidEmail(email)) {
-      throw new Error("Formato de email incorreto!");
-    }
-
     const resFindEmail = await this.repo.findByEmail(email);
 
     if (!resFindEmail) {
@@ -70,10 +54,11 @@ export class UserService {
 
     const comparePassword = await bcrypt.compare(
       password,
-      resFindEmail.password_hash
+      resFindEmail.password_hash,
     );
+
     if (!comparePassword) {
-      throw new Error("Credenciais para login invalidas!");
+      throw new Error("Invalid Login Credentials!");
     }
 
     // Geração JWT Token
@@ -81,7 +66,9 @@ export class UserService {
       userId: resFindEmail.id,
       role: "user",
     };
+
     const token = jwt.sign(payload, SECRET, { expiresIn: "1h" });
+
     if (!token) {
       throw new Error("Token vazio, erro ao gerar token");
     }

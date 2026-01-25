@@ -1,148 +1,148 @@
-export type budget = {
-  id: string;
-  user_id: string;
-  client_id: string;
-  public_id: string;
-  status: string;
-  title: string;
-  notes: string | null;
-  valid_until: Date | null;
-  currency: string;
-  subtotal: number;
-  discount_amount: number;
-  total: number;
-  created_at: Date;
-  updated_at: Date;
-};
+import * as z from "zod";
 
-export type item = {
-  id: string;
-  budget_id: string;
-  service_id: string | null;
-  name: string;
-  description: string | null;
-  unit: string;
-  quantity: number;
-  unit_price: number;
-  line_total: number;
-  sort_order: number;
-  created_at: Date;
-};
+export const statusBudgetEnum = z.enum([
+  "draft",
+  "sent",
+  "approved",
+  "rejected",
+  "canceled",
+]);
+export type statusBudget = z.infer<typeof statusBudgetEnum>;
 
-export type statusBudget =
-  | `draft`
-  | `sent`
-  | `approved`
-  | `rejected`
-  | `canceled`;
+export const valueUnitEnum = z.enum(["vl", "hr", "un"]);
+export type valueUnit = z.infer<typeof valueUnitEnum>;
 
-export type valueUnit = "vl" | "hr" | "un";
+export const budgetSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  public_id: z.string().max(32),
+  status: statusBudgetEnum,
+  title: z.string().trim().max(160).nullable(),
+  notes: z.string().trim().nullable(),
+  valid_until: z.coerce.date().nullable(),
+  currency: z.string().length(3),
+  subtotal: z.number().nonnegative(),
+  discount_amount: z.number().nonnegative(),
+  total: z.number().nonnegative(),
+  created_at: z.date(),
+  updated_at: z.date(),
+});
+export type budget = z.infer<typeof budgetSchema>;
 
-export type createBudgetInputDTO = {
-  budget: {
-    client_id: string;
-    status: string;
-    title: string;
-    notes: string;
-    valid_until: Date;
-    currency: string;
-    subtotal: number;
-    discount_amount: number;
-    total: number;
-  };
-  items: createItemBudgetInputDTO[];
-};
+export const itemSchema = z.object({
+  id: z.string().uuid(),
+  budget_id: z.string().uuid(),
+  service_id: z.string().uuid().nullable(),
+  name: z.string().trim().max(160),
+  description: z.string().trim().nullable(),
+  unit: z.string().trim().max(40).default("service"),
+  quantity: z.number().nonnegative(),
+  unit_price: z.number().nonnegative(),
+  line_total: z.number().nonnegative(),
+  sort_order: z.number().int(),
+  created_at: z.date(),
+});
+export type item = z.infer<typeof itemSchema>;
 
-export type createItemBudgetInputDTO = {
-  budget_id: string;
-  service_id: string;
-  name: string;
-  description: string;
-  unit: string;
-  quantity: number;
-  unit_price: number;
-  line_total: number;
-  sort_order: number;
-};
+// ======= DTOS
 
-export type createBudgetOutputDTO = {
-  budget: {
-    id: string;
-    client_id: string;
-    status: string;
-    title: string;
-    valid_until: Date;
-    currency: string;
-    subtotal: number;
-    discount_amount: number;
-    total: number;
-  };
-  items: createItemBudgetOutputDTO[];
-};
+// --- ITEM INPUT
+export const createItemBudgetInputSchema = z.object({
+  budget_id: z.string().uuid("ID do orçamento inválido!"),
+  service_id: z.string().uuid("ID do serviço inválido!").optional(),
+  name: z.string().trim().min(4).max(160),
+  description: z.string().trim().max(160).optional(),
+  unit: z.string().trim().max(40).default("service"),
+  quantity: z.coerce.number().nonnegative(),
+  unit_price: z.coerce.number().nonnegative(),
+  line_total: z.coerce.number().nonnegative(),
+  sort_order: z.coerce.number().int().default(0),
+});
+export type createItemBudgetInputDTO = z.infer<
+  typeof createItemBudgetInputSchema
+>;
 
-export type createItemBudgetOutputDTO = {
-  budget_id: string;
-  name: string;
-  unit: string;
-  quantity: number;
-  unit_price: number;
-  line_total: number;
-  sort_order: number;
-};
+// --- BUDGET COMPLETO INPUT
+export const createBudgetBodySchema = z.object({
+  budget: z.object({
+    client_id: z.string().uuid("ID do cliente inválido!"),
+    status: statusBudgetEnum.default("draft"),
+    title: z.string().trim().min(4).max(160),
+    notes: z.string().trim().optional(),
+    valid_until: z.coerce.date().nullable(),
+    currency: z.string().length(3).default("BRL"),
+    subtotal: z.coerce.number().nonnegative(),
+    discount_amount: z.coerce.number().nonnegative().default(0),
+    total: z.coerce.number().nonnegative(),
+  }),
+  items: z
+    .array(createItemBudgetInputSchema.omit({ budget_id: true }))
+    .nonempty("O orçamento deve conter pelo menos um item"),
+});
+export type createBudgetInputDTO = z.infer<typeof createBudgetBodySchema>;
 
-// ===== UPDATE
+// --- UPDATES (Partials)
+export const updateBudgetInputSchema =
+  createBudgetBodySchema.shape.budget.partial();
+export type updateBudgetInputDTO = z.infer<typeof updateBudgetInputSchema>;
 
-export type updateBudgetInputDTO = Partial<{
-  client_id: string;
-  status: string;
-  title: string;
-  notes: string;
-  valid_until: Date;
-  currency: string;
-  discount_amount: number;
-}>;
+export const updateItemBudgetInputSchema = createItemBudgetInputSchema
+  .omit({ budget_id: true })
+  .partial();
+export type updateItemBudgetInputDTO = z.infer<
+  typeof updateItemBudgetInputSchema
+>;
 
-export type updateItemBudgetOutputDTO = Partial<{
-  budget_id: string;
-  name: string;
-  unit: string;
-  quantity: number;
-  unit_price: number;
-  line_total: number;
-  sort_order: number;
-}>;
+// ====
 
-export type updateBudgetOutputDTO = {
-  budget: {
-    id: string;
-    client_id: string;
-    status: string;
-    title: string;
-    valid_until: Date | null;
-    currency: string;
-    subtotal: number;
-    discount_amount: number;
-    total: number;
-  };
-  items: updateItemBudgetOutputDTO[];
-};
+export const paramsBudgetIdSchema = z.object({
+  id: z.uuid("ID invalido!"),
+});
 
-// ===== GET BY ID
+// ==== Outputs
 
-export type getBudgetByIdOutputDTO = {
-  budget: budget;
-  items: item[];
-};
+export const createItemBudgetOutputSchema = itemSchema.pick({
+  budget_id: true,
+  name: true,
+  unit: true,
+  quantity: true,
+  unit_price: true,
+  line_total: true,
+  sort_order: true,
+});
+export type createItemBudgetOutputDTO = z.infer<
+  typeof createItemBudgetOutputSchema
+>;
 
-// ===== UPDATE ITEM
+export const createBudgetOutputSchema = z.object({
+  budget: budgetSchema.pick({
+    id: true,
+    client_id: true,
+    status: true,
+    title: true,
+    valid_until: true,
+    currency: true,
+    subtotal: true,
+    discount_amount: true,
+    total: true,
+  }),
+  items: z.array(createItemBudgetOutputSchema),
+});
+export type createBudgetOutputDTO = z.infer<typeof createBudgetOutputSchema>;
 
-export type updateItemBudgetInputDTO = Partial<{
-  service_id: string
-  name: string;
-  description: string
-  unit: string;
-  quantity: number;
-  unit_price: number;
-  line_total: number;
-  sort_order: number;
-}>;
+export const getBudgetByIdOutputSchema = z.object({
+  budget: budgetSchema,
+  items: z.array(itemSchema),
+});
+export type getBudgetByIdOutputDTO = z.infer<typeof getBudgetByIdOutputSchema>;
+
+// --- UPDATE OUTPUTS
+export const updateItemBudgetOutputSchema =
+  createItemBudgetOutputSchema.partial();
+export type updateItemBudgetOutputDTO = z.infer<
+  typeof updateItemBudgetOutputSchema
+>;
+
+export const updateBudgetOutputSchema = createBudgetOutputSchema;
+export type updateBudgetOutputDTO = z.infer<typeof updateBudgetOutputSchema>;

@@ -5,6 +5,7 @@ import routes from "./routes/routes";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import { ZodError } from "zod";
 
 dotenv.config();
 const CORS = process.env.CORS_ORIGIN;
@@ -40,6 +41,15 @@ app.use((_req, res) => {
 
 //Quando ouver qualquer erro ele cai aqui
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  // Verificando se o erro é de validação do zod
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      status: "validation_error",
+      message: "Dados inválidos",
+      errors: err.flatten().fieldErrors, // Retorna os erros por campo
+    });
+  }
+
   const statusCode = err.status || 500;
   res.status(statusCode).json({
     status: "error",

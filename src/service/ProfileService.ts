@@ -12,21 +12,20 @@ export class ProfileService {
     this.repo = repo;
   }
 
-  async create(body: createProfileInputDTO): Promise<createProfileOutputDTO> {
-    const result = await this.repo.create(body);
+  async create(
+    body: createProfileInputDTO,
+    userId: string,
+  ): Promise<createProfileOutputDTO> {
+    const result = await this.repo.create(body, userId);
 
     return result;
   }
 
-  async update(body: updateProfileInputDTO, userId: string): Promise<void>{
-    const result = await this.repo.update(body, userId);
-
-    return;
+  async update(body: updateProfileInputDTO, userId: string): Promise<void> {
+    return await this.repo.update(body, userId);
   }
 
-  async delete(userId: string, profileId: string): Promise<void>{
-    const result = await this.repo.delete(userId, profileId);
-
-    return;
+  async delete(userId: string, profileId: string): Promise<void> {
+    return await this.repo.delete(userId, profileId);
   }
 }

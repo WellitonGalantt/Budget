@@ -1,3 +1,5 @@
+import * as z from "zod";
+
 export interface User {
   id: string;
   name: string;
@@ -8,11 +10,19 @@ export interface User {
   updated_at: Date;
 }
 
-export type CreateUserInputDTO = {
-  name: string;
-  email: string;
-  password: string;
-};
+export const createUserBodySchema = z.object({
+  name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres!"),
+  email: z.email("Email invalido!"),
+  password: z
+    .string()
+    .min(8, "Senha deve conter no minimo 8 caracter!")
+    .regex(
+      /^((?=\S*?[A-Z])(?=\S*?[a-z])(?=\S*?[0-9]).{6,})\S$/,
+      "Senha muito fraca!",
+    ),
+});
+
+export type CreateUserInputDTO = z.infer<typeof createUserBodySchema>;
 
 export type CreateUserOutputDTO = {
   id: string;
@@ -21,10 +31,12 @@ export type CreateUserOutputDTO = {
 
 // === Login
 
-export type loginInputDTO = {
-  email: string;
-  password: string;
-};
+export const loginUserBodySchema = z.object({
+  email: z.email("Email invalido"),
+  password: z.string().min(8, "Senha deve conter no minimo 8 caracter!"),
+});
+
+export type loginInputDTO = z.infer<typeof loginUserBodySchema>;
 
 export type loginOutputDTO = {
   id: string;
@@ -32,6 +44,10 @@ export type loginOutputDTO = {
 };
 
 // Get User
+
+export const getUserParamsSchema = z.object({
+  id: z.uuid("Invalid UUID"),
+});
 
 export type getUserOutputDTO = {
   name: string;

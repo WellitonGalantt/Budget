@@ -9,29 +9,7 @@ import {
   updateBudgetOutputDTO,
   updateItemBudgetInputDTO,
 } from "../types/budgetTypes";
-import { formatString, validateTypeUnit } from "../utils/formatStrings";
-import { verifyAllowedKeys } from "../utils/verifyAllowedKeys";
-import { isValidStatusBudget } from "../utils/isValidStatusBudget";
-
-const alowedUpdateKeys = [
-  "client_id",
-  "status",
-  "title",
-  "notes",
-  "valid_until",
-  "currency",
-  "discount_amount",
-] as const;
-// Quando colocamos 'as const' o TS entende que é um array de strings literais e não um array de strings genéricas
-// Ou seja, cada string dentro do array é um tipo específico e não apenas uma string qualquer
-
-// export const verifyAllowedKeys = (key: string): boolean => {
-//   return alowedUpdateKeys.includes(key as typeof alowedUpdateKeys[number]);
-// }
-
-// Usando Set para melhorar a performance na verificação de chaves permitidas
-// O set tem complexidade O(1) para operações de busca, enquanto o array tem complexidade O(n)
-const alowedUpdateKeysSet = new Set<string>(alowedUpdateKeys);
+import { formatString } from "../utils/formatStrings";
 
 export class BudgetService {
   private repo: BudgetRepository;
@@ -46,111 +24,13 @@ export class BudgetService {
   ): Promise<createBudgetOutputDTO> {
     const budget = input.budget;
     const items = input.items;
-    const allowedCreateItemKeys = [
-      "budget_id",
-      "service_id",
-      "name",
-      "description",
-      "unit",
-      "quantity",
-      "unit_price",
-      "line_total",
-      "sort_order",
-    ] as const;
 
-    const allowedCreateBudgetKeys = [
-      "client_id",
-      "status",
-      "title",
-      "notes",
-      "valid_until",
-      "currency",
-      "subtotal",
-      "discount_amount",
-      "total",
-    ] as const;
+    console.log(budget);
+    console.log(items);
 
-    const allowedCreateBudgetKeysSet = new Set<string>(allowedCreateBudgetKeys);
-    const allowedCreateItemKeysSet = new Set<string>(allowedCreateItemKeys);
-
-    verifyAllowedKeys(budget, allowedCreateBudgetKeysSet);
-
-    // ===== Budget =====
-
-    if (!budget.title || budget.title.trim() === "") {
-      throw new Error("Title is required");
-    }
-
-    if (!isValidStatusBudget(budget.status)) {
-      throw new Error("Invalid status");
-    }
-
-    if (budget.valid_until) {
-      const validUntilDate = new Date(budget.valid_until);
-      if (isNaN(validUntilDate.getTime())) {
-        console.log(validUntilDate);
-        console.log(validUntilDate.getTime());
-        throw new Error("Valid until must be a valid date");
-      }
-    }
-
-    if (!budget.currency || budget.currency.trim() === "") {
-      throw new Error("Currency is required");
-    }
-
-    if (budget.subtotal < 0) {
-      throw new Error("Subtotal cannot be negative");
-    }
-
-    if (budget.discount_amount < 0) {
-      throw new Error("Discount amount cannot be negative");
-    }
-
-    if (budget.total < 0) {
-      throw new Error("Total cannot be negative");
-    }
-
-    // ===== Items =====
-
-    if (!items || items.length === 0) {
-      throw new Error("Budget must have at least one item");
-    }
-
-    for (const item of items) {
-      verifyAllowedKeys(item, allowedCreateItemKeysSet);
-
-      if (!item.name || item.name.trim() === "") {
-        throw new Error("Item name is required");
-      }
-
-      if (item.quantity <= 0) {
-        throw new Error("Item quantity must be greater than zero");
-      }
-
-      if (!validateTypeUnit(item.unit)) {
-        throw new Error(
-          "This item unit not valid, just values 'vl', 'hr' and 'un'",
-        );
-      }
-
-      if (item.unit_price < 0) {
-        throw new Error("Item unit price cannot be negative");
-      }
-
-      if (item.line_total < 0) {
-        throw new Error("Item line total cannot be negative");
-      }
-
-      if (item.sort_order < 0) {
-        throw new Error("Item sort order cannot be negative");
-      }
-    }
-
-    const totalBudget = items.reduce((acc, i) => {
-      return acc + Number(i.quantity * i.unit_price);
+    const subTotalBudget = items.reduce((acc, item) => {
+      return acc + item.quantity * item.unit_price;
     }, 0);
-
-    console.log(budget.title);
 
     const inputBgt: createBudgetInputDTO = {
       budget: {
@@ -158,7 +38,8 @@ export class BudgetService {
         title: formatString("none", budget.title),
         notes: budget.notes ? formatString("none", budget.notes) : "",
         currency: "BRL",
-        total: totalBudget - budget.discount_amount,
+        subtotal: subTotalBudget,
+        total: subTotalBudget - budget.discount_amount,
       },
       items: items.map((i) => {
         const totalItem = i.quantity * i.unit_price;
@@ -181,54 +62,9 @@ export class BudgetService {
   ): Promise<updateBudgetOutputDTO> {
     const budget = input;
 
-    verifyAllowedKeys(budget, alowedUpdateKeysSet);
-
-    // Filtrando apenas os campos que foram fornecidos para atualização
-    const budgetDateUpdate: Record<string, any> = {};
-    for (const key in budget) {
-      const value = budget[key as keyof typeof budget];
-
-      if (value !== undefined) {
-        budgetDateUpdate[key] = value;
-      }
-    }
-
-    if (Object.keys(budgetDateUpdate).length === 0) {
-      throw new Error("No fields to update");
-    }
-
-    // === Validacoes ===
-
-    if (
-      budgetDateUpdate.status &&
-      !isValidStatusBudget(budgetDateUpdate.status)
-    ) {
-      throw new Error("Invalid status");
-    }
-
-    if (budgetDateUpdate.valid_until) {
-      const validUntilDate = new Date(budgetDateUpdate.valid_until);
-      if (isNaN(validUntilDate.getTime())) {
-        console.log(validUntilDate);
-        console.log(validUntilDate.getTime());
-        throw new Error("Valid until must be a valid date");
-      }
-    }
-
-    console.log(budgetDateUpdate);
-
-    const inputDate: updateBudgetInputDTO = {
-      ...budgetDateUpdate,
-      title: budgetDateUpdate.title
-        ? formatString("none", budgetDateUpdate.title)
-        : "",
-      notes: budgetDateUpdate.notes
-        ? formatString("none", budgetDateUpdate.notes)
-        : "",
-    };
     // Quando estamos falando de update sem ter todos os campos obrigatórios, ele se torna uma atualização parcial
     // Um PATCH ao invés de um PUT, por isso o tipo deve ser Partial<type>
-    return await this.repo.updateBudget(inputDate, userId, budgetId);
+    return await this.repo.updateBudget(budget, userId, budgetId);
   }
 
   async delete(userId: string, budgetId: string): Promise<void> {
@@ -251,45 +87,8 @@ export class BudgetService {
     userId: string,
     budgetId: string,
   ): Promise<void> {
-    const allowedCreateItemKeys = [
-      "budget_id",
-      "service_id",
-      "name",
-      "description",
-      "unit",
-      "quantity",
-      "unit_price",
-      "line_total",
-      "sort_order",
-    ] as const;
-
-    const allowedCreateItemKeysSet = new Set<string>(allowedCreateItemKeys);
-    verifyAllowedKeys(item, allowedCreateItemKeysSet);
-
-    if (!item.name || item.name.trim() === "") {
-      throw new Error("Item name is required");
-    }
-
-    if (item.quantity <= 0) {
-      throw new Error("Item quantity must be greater than zero");
-    }
-
-    if (!validateTypeUnit(item.unit)) {
-      throw new Error(
-        "This item unit not valid, just values 'vl', 'hr' and 'un'",
-      );
-    }
-
-    if (item.unit_price < 0) {
-      throw new Error("Item unit price cannot be negative");
-    }
-
     const input = {
       ...item,
-      name: formatString("none", item.name),
-      description: item.description
-        ? formatString("none", item.description)
-        : "",
       line_total: item.quantity * item.unit_price,
     };
 
@@ -301,73 +100,7 @@ export class BudgetService {
     userId: string,
     itemId: string,
   ) {
-    const allowedUpdateItemKeys = [
-      "service_id",
-      "name",
-      "description",
-      "unit",
-      "quantity",
-      "unit_price",
-      "line_total",
-      "sort_order",
-    ] as const;
-
-    const allowedUpdateItemKeysSet = new Set<string>(allowedUpdateItemKeys);
-    verifyAllowedKeys(item, allowedUpdateItemKeysSet);
-
-    const budgetDateUpdate: Record<string, any> = {};
-    for (const key in item) {
-      const value = item[key as keyof typeof item];
-
-      if (value !== undefined) {
-        budgetDateUpdate[key] = value;
-      }
-    }
-
-    if (Object.keys(budgetDateUpdate).length === 0) {
-      throw new Error("No fields to update");
-    }
-
-    if (budgetDateUpdate.quantity && budgetDateUpdate.quantity <= 0) {
-      throw new Error("Item quantity must be greater than zero");
-    }
-
-    if (budgetDateUpdate.unit && !validateTypeUnit(budgetDateUpdate.unit)) {
-      throw new Error(
-        "This budgetDateUpdate unit not valid, just values 'vl', 'hr' and 'un'",
-      );
-    }
-
-    if (budgetDateUpdate.unit_price && budgetDateUpdate.unit_price < 0) {
-      throw new Error("Item unit price cannot be negative");
-    }
-
-    if (budgetDateUpdate.unit_price || budgetDateUpdate.quantity) {
-      const existingItem = await this.repo.getItemBudgetById(itemId, userId);
-
-      const quantity =
-        budgetDateUpdate.quantity !== undefined
-          ? budgetDateUpdate.quantity
-          : existingItem.quantity;
-      const unit_price =
-        budgetDateUpdate.unit_price !== undefined
-          ? budgetDateUpdate.unit_price
-          : existingItem.unit_price;
-
-      budgetDateUpdate.line_total = quantity * unit_price;
-    }
-
-    const input = {
-      ...budgetDateUpdate,
-      name: budgetDateUpdate.name
-        ? formatString("none", budgetDateUpdate.name)
-        : undefined,
-      description: budgetDateUpdate.description
-        ? formatString("none", budgetDateUpdate.description)
-        : undefined,
-    };
-
-    return await this.repo.updateItemBudget(input, userId, itemId);
+    return await this.repo.updateItemBudget(item, userId, itemId);
   }
 
   async deleteItemBudget(itemId: string, userId: string): Promise<void> {

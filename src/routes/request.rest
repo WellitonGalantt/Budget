@@ -1,0 +1,18 @@
+POST http://localhost:3333/api/user/register
+content-type: application/json
+
+{
+    "name": "Joaozinho Zika",
+    "email": "teste@gmail.com",
+    "password": "teste16@#_D"
+}
+
+###
+
+POST http://localhost:3333/api/user/login
+content-type: application/json
+
+{
+    "email": "teste@gmail.com",
+    "password": "teste16@#_D"
+}

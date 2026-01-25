@@ -1,6 +1,5 @@
 import { Router } from "express";
 import UserRepository from "../repository/UserRepository";
-import { UserController } from "../controller/userController";
 import { UserService } from "../service/UserService";
 import { authMiddleware } from "../middlewares.ts/authMiddleware";
 import { ProfileRepository } from "../repository/ProfileRepository";
@@ -12,6 +11,23 @@ import { ClientController } from "../controller/ClienteController";
 import { BudgetController } from "../controller/BudgetController";
 import { BudgetRepository } from "../repository/BudgetRepository";
 import { BudgetService } from "../service/BudgetService";
+import { validate } from "../middlewares.ts/validade";
+import {
+  createUserBodySchema,
+  getUserParamsSchema,
+  loginUserBodySchema,
+} from "../types/userTypes";
+import {
+  createProfileBodySchema,
+  deleteProfileParamsSchema,
+  updateProfileBodySchema,
+} from "../types/profileTypes";
+import { UserController } from "../controller/UserController";
+import {
+  createBudgetBodySchema,
+  paramsBudgetIdSchema,
+  updateBudgetInputSchema,
+} from "../types/budgetTypes";
 
 const routes = Router();
 
@@ -30,36 +46,86 @@ const clientController = new ClientController(clientService);
 const dudgetRepository = new BudgetRepository();
 const budgetService = new BudgetService(dudgetRepository);
 const budgetController = new BudgetController(budgetService);
-// Users
-// Profile
-// Budgets
-// Clients
 
-routes.get("/", (req, res) => {
+routes.get("/", (_, res) => {
   res.send("Hello World!");
 });
 
-// // -- Users --
+// ==== Users ====
 
-routes.post("/user/register", userController.create);
-routes.post("/user/login", userController.login);
+routes.post(
+  "/user/register",
+  validate({ body: createUserBodySchema }),
+  userController.create,
+);
+
+routes.post(
+  "/user/login",
+  validate({ body: loginUserBodySchema }),
+  userController.login,
+);
+
 // routes.put("/user/update");
 // routes.delete("/user/delete");
-routes.get("/user/profile/:id", authMiddleware, userController.getUser); // Traz os dados do usuario e da empresa
-routes.get("/user/verify", authMiddleware, userController.verify); // Traz os dados do usuario e da empresa
 
-// // -- Profile --
+routes.get(
+  "/user/profile/:id",
+  authMiddleware,
+  validate({ params: getUserParamsSchema }),
+  userController.getUser,
+);
 
-routes.post("/profile/create", authMiddleware, profileController.create);
-routes.put("/profile/update", authMiddleware, profileController.update);
-routes.delete("/profile/delete/:id", authMiddleware, profileController.delete);
+routes.get("/user/verify", authMiddleware, userController.verify);
 
-// // -- Budgets --
+// ==== Profile ====
 
-routes.post("/budget/create", authMiddleware, budgetController.create);
-routes.put("/budget/update/:id", authMiddleware, budgetController.update);
-routes.delete("/budget/delete/:id", authMiddleware, budgetController.delete);
-routes.get("/budget/view/:id", authMiddleware, budgetController.getById);
+routes.post(
+  "/profile/create",
+  authMiddleware,
+  validate({ body: createProfileBodySchema }),
+  profileController.create,
+);
+
+routes.put(
+  "/profile/update",
+  authMiddleware,
+  validate({ body: updateProfileBodySchema }),
+  profileController.update,
+);
+
+routes.delete(
+  "/profile/delete/:id",
+  authMiddleware,
+  validate({ params: deleteProfileParamsSchema }),
+  profileController.delete,
+);
+
+// ==== Budgets ====
+
+routes.post(
+  "/budget/create",
+  authMiddleware,
+  validate({ body: createBudgetBodySchema }),
+  budgetController.create,
+);
+routes.put(
+  "/budget/update/:id",
+  authMiddleware,
+  validate({ body: updateBudgetInputSchema, params: paramsBudgetIdSchema }),
+  budgetController.update,
+);
+routes.delete(
+  "/budget/delete/:id",
+  authMiddleware,
+  validate({ params: paramsBudgetIdSchema }),
+  budgetController.delete,
+);
+routes.get(
+  "/budget/view/:id",
+  authMiddleware,
+  validate({ params: paramsBudgetIdSchema }),
+  budgetController.getById,
+);
 routes.get("/budget/all", authMiddleware, budgetController.getAllBudgets);
 
 // // -- Items --

@@ -6,10 +6,14 @@ import {
 import prisma from "./prismaRepository";
 
 export class ProfileRepository {
-  async create(input: createProfileInputDTO): Promise<createProfileOutputDTO> {
-    const result = await prisma.profile.create ({
+  async create(
+    input: createProfileInputDTO,
+    userId: string,
+  ): Promise<createProfileOutputDTO> {
+    const result = await prisma.profile.create({
       data: {
         ...input,
+        user_id: userId,
       },
       select: {
         id: true,

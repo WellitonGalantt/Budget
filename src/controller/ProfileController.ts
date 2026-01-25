@@ -15,9 +15,8 @@ export class ProfileController {
     async (req: Request<{}, {}, createProfileInputDTO>, res: Response) => {
       const body = req.body;
       const userId = req.user!.userId;
-      body.user_id = userId;
 
-      const result = await this.service.create(body);
+      const result = await this.service.create(body, userId);
 
       successResponse(res, 201, result);
     },
